@@ -9,7 +9,7 @@ class solr_config_settings(TransientModel):
     _inherit = 'res.config.settings'
 
     _columns = {
-        'solr_url' : fields.char('SolR URL', size=128, required=True),
+        'solr_url' : fields.char('SolR URL', size=128),
     }
 
     def get_default_solr_url(self, cr, uid, field_names, context=None):
@@ -24,7 +24,10 @@ class solr_config_settings(TransientModel):
 
     def get_solr_interface(self, cr, uid, context=None):
         solr_url = self.pool.get("ir.config_parameter").get_param(cr, uid, "solr.url", context=context)
-        return sunburnt.SolrInterface(solr_url.encode('utf-8'))
+        if solr_url:
+            return sunburnt.SolrInterface(solr_url.encode('utf-8'))
+        else:
+            return None
 
     def index_all(self, cr, uid, ids, context=None):
         for model_name, model_obj in self.pool.models.iteritems():
@@ -108,11 +111,12 @@ class solr_mixin(AbstractModel):
     def create(self, cr, uid, values, context=None):
         res_id = super(solr_mixin, self).create(cr, uid, values, context=context)
         si = self.pool.get('solr.config.settings').get_solr_interface(cr, uid, context)
-        new_vals = self.read(cr, uid, [res_id], self.fields_get(cr, uid, context=context).keys())[0]
-        solr_values = self.oe_to_solr(cr, uid, res_id, new_vals, False, context)
-        print "*********** CCCCCCCCCCCCC", self._name, solr_values
-        si.add(solr_values)
-        si.commit()
+        if si:
+            new_vals = self.read(cr, uid, [res_id], self.fields_get(cr, uid, context=context).keys())[0]
+            solr_values = self.oe_to_solr(cr, uid, res_id, new_vals, False, context)
+#            print "*********** CCCCCCCCCCCCC", self._name, solr_values
+            si.add(solr_values)
+            si.commit()
         return res_id
 
     def write(self, cr, uid, ids, values, context=None):
@@ -120,12 +124,13 @@ class solr_mixin(AbstractModel):
             ids = [ids]
         res = super(solr_mixin, self).write(cr, uid, ids, values, context=context)
         si = self.pool.get('solr.config.settings').get_solr_interface(cr, uid, context)
-        for id in ids:
-            new_vals = self.read(cr, uid, [id], self.fields_get(cr, uid, context=context).keys())[0]
-            solr_values = self.oe_to_solr(cr, uid, id, new_vals, False, context)
-            print "*********** WWWWWWWWWWWWW", self._name, solr_values
-            si.add(solr_values)
-        si.commit()
+        if si:
+            for id in ids:
+                new_vals = self.read(cr, uid, [id], self.fields_get(cr, uid, context=context).keys())[0]
+                solr_values = self.oe_to_solr(cr, uid, id, new_vals, False, context)
+#                print "*********** WWWWWWWWWWWWW", self._name, solr_values
+                si.add(solr_values)
+            si.commit()
         return res
 
     def unlink(self, cr, uid, ids, context=None):
