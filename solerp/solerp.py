@@ -38,7 +38,7 @@ class solr_config_settings(TransientModel):
 
     def index_all(self, cr, uid, ids, context=None):
         for model_name, model_obj in self.pool.models.iteritems():
-            if hasattr(model_obj, '_solr_mixin') and model_name != 'solr.mixin' and model_obj._solr_index_alone:
+            if hasattr(model_obj, '_solr_collection_mixin') and model_name != 'solr.collection.mixin':
                 res_ids = model_obj.search(cr, uid, [], context=context)
                 model_obj.write(cr, uid, res_ids, {'active': True}, context)
 
@@ -46,7 +46,6 @@ class solr_config_settings(TransientModel):
 class solr_mixin(AbstractModel):
     _description='SolR mixin'
     _name = 'solr.mixin'
-    _solr_mixin = True
     _solr_index_alone = True
 
     def _get_included_relations(self, cr, uid, context=None):
@@ -112,8 +111,15 @@ class solr_mixin(AbstractModel):
             solr_vals = self._field_to_solr(cr, uid, field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals, context)
         return solr_vals
 
+
+class solr_collection_mixin(AbstractModel):
+    _description='SolR Collection mixin'
+    _name = 'solr.collection.mixin'
+    _inherit = 'solr.mixin'
+    _solr_collection_mixin = True
+
     def create(self, cr, uid, values, context=None):
-        res_id = super(solr_mixin, self).create(cr, uid, values, context=context)
+        res_id = super(solr_collection_mixin, self).create(cr, uid, values, context=context)
         si = self.pool.get('solr.config.settings').get_solr_interface(cr, uid, context)
         if si:
             solr_context = context.copy()
@@ -129,8 +135,10 @@ class solr_mixin(AbstractModel):
     def write(self, cr, uid, ids, values, context=None):
         if isinstance(ids, (int, long)):
             ids = [ids]
-        res = super(solr_mixin, self).write(cr, uid, ids, values, context=context)
         si = self.pool.get('solr.config.settings').get_solr_interface(cr, uid, context)
+        if si:
+          si.delete([rec['solr_id'] for rec in self.read(cr, uid, ids, ['solr_id'])])
+        res = super(solr_collection_mixin, self).write(cr, uid, ids, values, context=context)
         solr_context = False
         if si:
             for id in ids:
@@ -148,5 +156,8 @@ class solr_mixin(AbstractModel):
     def unlink(self, cr, uid, ids, context=None):
         if isinstance(ids, (int, long)):
             ids = [ids]
-        res = super(solr_mixin, self).unlink(cr, uid, ids, context=context)
+        si = self.pool.get('solr.config.settings').get_solr_interface(cr, uid, context)
+        if si:
+          si.delete([rec['solr_id'] for rec in self.read(cr, uid, ids, ['solr_id'])])
+        res = super(solr_collection_mixin, self).unlink(cr, uid, ids, context=context)
         return res
