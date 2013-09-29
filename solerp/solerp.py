@@ -3,6 +3,8 @@ from openerp.osv.orm import Model, TransientModel, AbstractModel
 from openerp.tools.translate import _
 from openerp import SUPERUSER_ID
 import sunburnt
+from unidecode import unidecode
+
 
 class solr_config_settings(TransientModel):
 
@@ -111,12 +113,25 @@ class solr_mixin(AbstractModel):
             solr_vals = self._field_to_solr(cr, uid, field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals, context)
         return solr_vals
 
+    def _urlencode(self, word):
+        return unidecode(word).lower().strip().replace(".", "-").replace(" ", "-").replace("'", "-").replace(",", "").replace("--", "-").replace("---", "-")
+
 
 class solr_collection_mixin(AbstractModel):
     _description='SolR Collection mixin'
     _name = 'solr.collection.mixin'
     _inherit = 'solr.mixin'
     _solr_collection_mixin = True
+
+    def _solr_id(self, cr, uid, ids, name, arg, context=None):
+        res = {}
+        for item in self.browse(cr, uid, ids, context=context):
+            res[item.id] = self._urlencode(item.name)
+        return res
+
+    _columns = {
+        'solr_id': fields.function(_solr_id, string='ID SolR', type='char', store=True),
+    }
 
     def create(self, cr, uid, values, context=None):
         res_id = super(solr_collection_mixin, self).create(cr, uid, values, context=context)
