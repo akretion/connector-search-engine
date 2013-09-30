@@ -107,7 +107,9 @@ class solr_mixin(AbstractModel):
         included_relations = self._get_included_relations(cr, uid, context)
         skipped_fields = self._get_skipped_fields(cr, uid, context)
         solr_vals = {}
-        solr_vals["id"] = self._name.replace(".", "-") + "-" + str(res_id)
+        solr_vals["id"] = self._solr_id(cr, uid, [res_id], False, False, context)[res_id]
+        solr_vals["id_i"] = res_id
+        solr_vals["object_s"] = self._name
         solr_vals["text"] = oe_vals.get(self._rec_name)
         for field, descriptor in self.fields_get(cr, uid, context=context).iteritems():
             solr_vals = self._field_to_solr(cr, uid, field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals, context)
@@ -115,6 +117,21 @@ class solr_mixin(AbstractModel):
 
     def _urlencode(self, word):
         return unidecode(word).lower().strip().replace(".", "-").replace(" ", "-").replace("'", "-").replace(",", "").replace("--", "-").replace("---", "-")
+
+    def _solr_id_parts(self, cr, uid, item, context=None):
+        name = self._urlencode(getattr(item, self._rec_name))
+        parts = [self._name.replace(".", "-"), name]
+        search = self.search(cr, uid, [['solr_id', '=', "/".join(parts)]])
+        if search and search[0] != item.id:
+            parts += [str(item.id)]
+        return parts
+
+    def _solr_id(self, cr, uid, ids, name, arg, context=None): #NOTE in an SEO/web prospective, mais SolR id is a name instead of of the OpenERP id
+        res = {}
+        records = self.read(cr, uid, ids, [self._rec_name, 'solr_id_suffix'], context=context)
+        for item in self.browse(cr, uid, ids, context=context):
+            res[item.id] = "/".join(self._solr_id_parts(cr, uid, item, context))
+        return res
 
 
 class solr_collection_mixin(AbstractModel):
@@ -124,10 +141,7 @@ class solr_collection_mixin(AbstractModel):
     _solr_collection_mixin = True
 
     def _solr_id(self, cr, uid, ids, name, arg, context=None):
-        res = {}
-        for item in self.browse(cr, uid, ids, context=context):
-            res[item.id] = self._urlencode(item.name)
-        return res
+        return super(solr_collection_mixin, self)._solr_id(cr, uid, ids, name, arg, context=context)
 
     _columns = {
         'solr_id': fields.function(_solr_id, string='ID SolR', type='char', store=True),
