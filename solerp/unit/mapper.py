@@ -71,7 +71,7 @@ class SolRExportMapper(ExportMapper):
             if field in included_relations:
                 field_res_id = solr_vals["%s_i" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
-                solr_values = self.oe_to_solr(record) #TODO find object specific Mapper ?
+                solr_values = self._oe_to_solr(record) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
                     if rel_k != "id" and rel_k != "text":
                         solr_vals["%s_%s" % (field, rel_k)] = solr_values[rel_k]
@@ -84,16 +84,19 @@ class SolRExportMapper(ExportMapper):
         return solr_vals
 
     def oe_to_solr(self, record, fields=None):
-        fields_dict = self.model.fields_get(self.session.cr, self.session.uid, context=self.session.context)
+        return self._oe_to_solr(record, fields)
+
+    def _oe_to_solr(self, record, fields=None):
         model = record._model
+        fields_dict = model.fields_get(self.session.cr, self.session.uid, context=self.session.context)
         oe_vals = model.read(self.session.cr, self.session.uid, [record.id], fields_dict.keys(), context=self.session.context)[0]
         included_relations = self._get_included_relations(record)
         skipped_fields = self._get_skipped_fields(record) #TODO use them + refactor
         solr_vals = {}
         solr_vals["id"] = "%s-%s" % (self.backend_record.name, record.id)
-        solr_vals["slug"] = self._slug(record)
-        solr_vals["object_s"] = self.model._name
-        solr_vals["text"] = oe_vals.get(self.model._rec_name) #TODO change or remove?
+        solr_vals["slug_s"] = self._slug(record)
+        solr_vals["object_s"] = model._name
+        solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
         for field, descriptor in fields_dict.iteritems():
             solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals)
         return solr_vals
@@ -102,10 +105,10 @@ class SolRExportMapper(ExportMapper):
         return unidecode(word).lower().strip().replace(".", "-").replace(" ", "-").replace("'", "-").replace(",", "").replace("--", "-").replace("---", "-")
 
     def _slug_parts(self, record):
-        raw_name = getattr(record, self.model._rec_name)
+        raw_name = getattr(record, record._model._rec_name)
         name = self._urlencode(raw_name)
-        parts = [self.model._name.replace(".", "-"), name]
-        search = self.model.search(self.session.cr, self.session.uid, [[self.model._rec_name, '=', raw_name]])
+        parts = [record._model._name.replace(".", "-"), name]
+        search = record._model.search(self.session.cr, self.session.uid, [[record._model._rec_name, '=', raw_name]])
         if search and search[0] != record.id:
             parts += [str(record.id)]
         return parts
