@@ -1,7 +1,7 @@
 {
     'name': 'SolR',
     'version': '0.1',
-    'category': 'Tools',
+    'category': 'Connector',
     'summary': 'SolR',
     'description': """
 SolR
@@ -9,8 +9,8 @@ SolR
     'author': 'Akretion',
     'website': 'http://www.akretion.com',
     'images': [],
-    'depends': ['base_setup', 'product'],
-    'data': ['solerp_view.xml'],
+    'depends': ['base_setup', 'connector', 'product'],
+    'data': ['solr_model_view.xml', 'solr_menu.xml'],
     'test': [
     ],
     'installable': True,
