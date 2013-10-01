@@ -101,7 +101,7 @@ class SolRExportSynchronizer(SolRBaseExportSynchronizer):
 
         self._map_data(fields=fields)
         record = self.mapper.data
-        si = SolrInterface(self.backend_record.location) #TODO auth
+        si = SolrInterface(self.backend_record.location.encode('utf-8')) #TODO auth
         si.add(record)
         si.commit()
         return _('Record exported with ID %s on SolR.') % record['id']

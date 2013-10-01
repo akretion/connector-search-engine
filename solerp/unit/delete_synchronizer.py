@@ -33,6 +33,6 @@ class SolRDeleteSynchronizer(DeleteSynchronizer):
         """ Run the synchronization, delete the record on SolR
         :param solr_id: identifier of the record to delete
         """
-        si = SolrInterface(self.backend_record.location) #TODO auth
+        si = SolrInterface(self.backend_record.location.encode('utf-8')) #TODO auth
         si.delete(solr_id)
         return _('Record %s deleted on SolR') % solr_id
