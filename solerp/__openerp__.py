@@ -9,8 +9,8 @@ SolR
     'author': 'Akretion',
     'website': 'http://www.akretion.com',
     'images': [],
-    'depends': ['base_setup', 'connector'],
-    'data': ['solr_model_view.xml', 'solr_menu.xml'],
+    'depends': ['connector'],
+    'data': ['solr_model_view.xml', 'solr_menu.xml', 'security/ir.model.access.csv'],
     'test': [
     ],
     'installable': True,
