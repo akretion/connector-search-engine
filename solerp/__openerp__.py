@@ -9,7 +9,7 @@ SolR
     'author': 'Akretion',
     'website': 'http://www.akretion.com',
     'images': [],
-    'depends': ['base_setup', 'connector', 'product'],
+    'depends': ['base_setup', 'connector'],
     'data': ['solr_model_view.xml', 'solr_menu.xml'],
     'test': [
     ],
