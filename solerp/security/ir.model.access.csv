@@ -1,2 +1,2 @@
 "id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
-"access_magento_backend","magento_backend connector manager","model_magento_backend","connector.group_connector_manager",1,1,1,1
+"access_solr_backend","solr_backend connector manager","model_solr_backend","connector.group_connector_manager",1,1,1,1
