@@ -4,7 +4,19 @@
     'category': 'Connector',
     'summary': 'SolR',
     'description': """
-SolR
+SolR 
+
+features
+--------
+
+Sync objects to SolR
+
+supported objects
+-----------------
+
+* product.product
+
+
     """,
     'author': 'Akretion',
     'website': 'http://www.akretion.com',

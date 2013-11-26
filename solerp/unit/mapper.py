@@ -27,6 +27,9 @@ from openerp.addons.connector.unit.mapper import (
 )
 from ..backend import solr
 
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class SolRExportMapper(ExportMapper):
 
@@ -41,6 +44,7 @@ class SolRExportMapper(ExportMapper):
             'char': "%s_s",
             'text': "%s_s",
             'integer': "%s_i",
+            'binary': "%s_bin",
             'float': "%s_f",
             'boolean': "%s_b",
             'many2one': "%s_s",
@@ -49,6 +53,8 @@ class SolRExportMapper(ExportMapper):
         }.get(field_type, "%s_s")
 
     def _field_to_solr(self, field, field_type, relation, included_relations, oe_vals=None, solr_vals=None):
+
+        #_logger.info('TOTOTOT\n %s %s \n'%(field, field_type))
         if not oe_vals:
             oe_vals = {}
         if not solr_vals:
