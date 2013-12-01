@@ -23,6 +23,7 @@ import logging
 from datetime import datetime
 from openerp.osv import fields, orm
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from openerp.addons.connector.queue.job import job
 import openerp.addons.connector as connector
 from openerp.addons.connector.session import ConnectorSession
 from openerp.addons.connector.connector import ConnectorUnit
@@ -69,6 +70,19 @@ class solr_backend(orm.Model):
         ids = self.search(cr, uid, domain, context=context)
         if ids:
             callback(cr, uid, ids, context=context)
+
+
+    @job
+    def index_all(self, cr, uid, ids, context=None):
+
+        import product
+        session = ConnectorSession(cr,uid,context)
+        product_obj = self.pool.get('product.product')
+        for i in product_obj.search(cr, uid, [], context=context):
+            _logger.info(i)
+            product.export_record(session,'product.product',i,['name'])
+
+
 
     def output_recorder(self, cr, uid, ids, context=None):
         """ Utility method to output a file containing all the recorded
