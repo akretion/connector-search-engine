@@ -31,16 +31,8 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class SolRExportMapper(ExportMapper):
-
-    def _get_included_relations(self, record):
-        return []
-
-    def _get_skipped_fields(self, record):
-        return []
-
-    def _solr_key(self, field_type):
-        return {
+def solr_key(field_type):
+    return {
             'char': "%s_s",
             'text': "%s_s",
             'integer': "%s_i",
@@ -50,7 +42,19 @@ class SolRExportMapper(ExportMapper):
             'many2one': "%s_s",
             'one2many': "%s_sm",
             'many2many': "%s_sm",
-        }.get(field_type, "%s_s")
+    }.get(field_type, "%s_s")
+
+
+class SolRExportMapper(ExportMapper):
+
+    def _get_included_relations(self, record):
+        return []
+
+    def _get_skipped_fields(self, record):
+        return []
+
+    def _solr_key(self, field_type):
+        return solr_key(field_type)
 
     def _field_to_solr(self, field, field_type, relation, included_relations, oe_vals=None, solr_vals=None):
 
@@ -77,7 +81,7 @@ class SolRExportMapper(ExportMapper):
             if field in included_relations:
                 field_res_id = solr_vals["%s_i" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
-                solr_values = self._oe_to_solr(record) #TODO find object specific Mapper ?
+                solr_values = self._oe_to_solr(included_record) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
                     if rel_k != "id" and rel_k != "text":
                         solr_vals["%s_%s" % (field, rel_k)] = solr_values[rel_k]
@@ -108,7 +112,7 @@ class SolRExportMapper(ExportMapper):
         return solr_vals
 
     def _urlencode(self, word):
-        return unidecode(word).lower().strip().replace(".", "-").replace(" ", "-").replace("'", "-").replace(",", "").replace("--", "-").replace("---", "-")
+        return unidecode(word).lower().strip().replace(".", "-").replace(" ", "-").replace("'", "-").replace(",", "").replace("--", "-").replace("---", "-").replace("/", "-").replace("&", "e")
 
     def _slug_parts(self, record):
         raw_name = getattr(record, record._model._rec_name)
