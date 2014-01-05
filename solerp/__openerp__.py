@@ -11,10 +11,28 @@ features
 
 Sync objects to SolR
 
+schema
+------
+
+This module comes with a very minimal schema.xml.example schema
+that you can copy to your schema.xml of your SolR server.
+
+Basically it relies a lot on dynamic fields so that SolR can
+adapt to all OpenERP object definitions.
+
+In a production system, you will instead likely customize a lot your
+schema.xml to provide advanced search features.
+
+
 supported objects
 -----------------
 
-* product.product
+Any OpenERP object can be synch'ed.
+But this module comes with a demo for product.product.
+To test it, just uncomment "import product" in __init__.py
+
+In a production system, you will instead probably implement your own
+export logic or overrides object by objects in some custom modules.
 
 
     """,
