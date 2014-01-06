@@ -105,7 +105,7 @@ class SolRExportMapper(ExportMapper):
         included_relations = self._get_included_relations(record)
         skipped_fields = self._get_skipped_fields(record) #TODO use them + refactor
         solr_vals = {}
-        solr_vals["id"] = "%s-%s" % (self.backend_record.name, record.id)
+        solr_vals["id"] = "%s %s %s" % (self.backend_record.name, model._name.replace('.', '-'), record.id)
         solr_vals["slug_s"] = self._slug(record)
         solr_vals["object_s"] = model._name
         solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
