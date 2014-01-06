@@ -14,14 +14,16 @@ Sync objects to SolR
 schema
 ------
 
-This module comes with a very minimal schema.xml.example schema
-that you can copy to your schema.xml of your SolR server.
+Solerp exports the OpenERP objects to match the SolR schema that is used
+by Sunspot (a reference Ruby [on Rails] integration with SolR):
+https://github.com/sunspot/sunspot/blob/master/sunspot_solr/solr/solr/conf/schema.xml
+This also enables a better integration with Sunspot later in a Ruby web app.
 
 Basically it relies a lot on dynamic fields so that SolR can
 adapt to all OpenERP object definitions.
 
 In a production system, you will instead likely customize a lot your
-schema.xml to provide advanced search features.
+schema.xml to provide more advanced search features.
 
 
 supported objects

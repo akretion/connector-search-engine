@@ -32,11 +32,14 @@ import logging
 _logger = logging.getLogger(__name__)
 
 def solr_key(field_type):
+    """ modeled after Sunspot dynamic fields: https://github.com/sunspot/sunspot/blob/master/sunspot_solr/solr/solr/conf/schema.xml """
     return {
             'char': "%s_s",
-            'text': "%s_s",
+            'text': "%s_text",
             'integer': "%s_i",
-            'binary': "%s_bin",
+            'date': "%s_d",
+            'datetime': "%s_dt",
+            'binary': "%s_bin", #useful?
             'float': "%s_f",
             'boolean': "%s_b",
             'many2one': "%s_s",
@@ -54,7 +57,7 @@ class SolRExportMapper(ExportMapper):
         return []
 
     def _solr_key(self, field_type):
-        return solr_key(field_type)
+        return "%ss" % (solr_key(field_type),)
 
     def _field_to_solr(self, field, field_type, relation, included_relations, oe_vals=None, solr_vals=None):
 
