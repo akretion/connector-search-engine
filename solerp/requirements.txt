@@ -1,3 +1,3 @@
-Unidecode #all to ascii
+slugify #all to ascii
 Sunburnt #solR
 httplib2
