@@ -19,7 +19,7 @@
 #
 ##############################################################################
 
-from unidecode import unidecode
+from slugify import slugify
 from openerp.tools.translate import _
 from openerp.addons.connector.unit.mapper import (
     mapping,
@@ -123,12 +123,9 @@ class SolRExportMapper(ExportMapper):
             solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals)
         return solr_vals
 
-    def _urlencode(self, word):
-        return unidecode(word).lower().strip().replace(".", "-").replace(" ", "-").replace("'", "-").replace(",", "").replace("--", "-").replace("---", "-").replace("/", "-").replace("&", "e")
-
     def _slug_parts(self, record):
         raw_name = getattr(record, record._model._rec_name)
-        name = self._urlencode(raw_name)
+        name = slugify(raw_name)
         parts = [record._model._name.replace(".", "-"), name]
         search = record._model.search(self.session.cr, self.session.uid, [[record._model._rec_name, '=', raw_name]])
         if search and search[0] != record.id:
