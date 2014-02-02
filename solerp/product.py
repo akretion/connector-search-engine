@@ -26,6 +26,7 @@ from .unit.export_synchronizer import SolRExportSynchronizer
 from .unit.delete_synchronizer import SolRDeleteSynchronizer
 from .unit.mapper import SolRExportMapper
 
+
 @solr
 class ProductExporter(SolRExportSynchronizer):
     _model_name = ['product.product']
@@ -36,7 +37,10 @@ class ProductDeleter(SolRDeleteSynchronizer):
 
 @solr
 class ProductExportMapper(SolRExportMapper):
-   _model_name = ['product.product']
+    _model_name = ['product.product']
+
+    def _get_included_relations(self, record):
+        return ['categ_id']
 
 @on_record_write(model_names='product.product')
 def solr_product_modified(session, model_name, record_id, fields=None):
