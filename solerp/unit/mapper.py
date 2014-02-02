@@ -73,26 +73,33 @@ class SolRExportMapper(ExportMapper):
             val = oe_vals.get(field)
             obj = self.session.pool[relation]
             if isinstance(val, (list, tuple)):
-                solr_vals["%s_i" % (field,)] = val[0]
-                solr_vals["%s_s" % (field,)] = val[1]
+                solr_vals["%s_is" % (field,)] = val[0]
+                solr_vals["%s_ss" % (field,)] = val[1]
             else:
-                solr_vals["%s_i" % (field,)] = val
+                solr_vals["%s_is" % (field,)] = val
                 val_name = obj.read(cr, uid, [val], [obj._rec_name], context=self.session.context)[0][obj._rec_name]
-                solr_vals["%s_s" % (field,)] = val_name
+                solr_vals["%s_ss" % (field,)] = val_name
 
             if field in included_relations:
-                field_res_id = solr_vals["%s_i" % (field,)]
+                field_res_id = solr_vals["%s_is" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
                 solr_values = self._oe_to_solr(included_record) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
-                    if rel_k != "id" and rel_k != "text":
+                    if rel_k not in ["id", "slug_ss", "text", "class_name", "instance_s", "type"]:
                         solr_vals["%s_%s" % (field, rel_k)] = solr_values[rel_k]
 
         elif field_type in ('one2many', 'many2many') and oe_vals.get(field):
             obj = self.session.pool.get(relation)
             records = obj.read(self.session.cr, self.session.uid, oe_vals.get(field), [obj._rec_name], context=self.session.context)
-            values = [r[obj._rec_name] for r in records]
-            solr_vals["%s_sm" % (field,)] = values #TODO store ids?
+            values = []
+            for r in records:
+                rec_name = r[obj._rec_name]
+                if isinstance(rec_name, (list, tuple)): # rec_name is (id, name) of a m2o
+                    rec_name = "%s,%s" % (rec_name[0], rec_name[1])
+                else:
+                    rec_name = ",%s" % (rec_name,)
+                values.append("%s,%s" % (r['id'], rec_name))
+            solr_vals["%s_sms" % (field,)] = values #TODO store ids?
         return solr_vals
 
     def oe_to_solr(self, record, fields=None):
@@ -101,14 +108,17 @@ class SolRExportMapper(ExportMapper):
     def _oe_to_solr(self, record, fields=None):
         model = record._model
         fields_dict = model.fields_get(self.session.cr, self.session.uid, context=self.session.context)
+        skipped_fields = self._get_skipped_fields(record) #TODO use them + refactor, do not read skipped_fields next
         oe_vals = model.read(self.session.cr, self.session.uid, [record.id], fields_dict.keys(), context=self.session.context)[0]
         included_relations = self._get_included_relations(record)
-        skipped_fields = self._get_skipped_fields(record) #TODO use them + refactor
+        #TODO allow to have indexed fields not stored, read that in ir.fields eventually + cache that in the session
         solr_vals = {}
-        solr_vals["id"] = "%s %s %s" % (self.backend_record.name, model._name.replace('.', '-'), record.id)
-        solr_vals["slug_s"] = self._slug(record)
-        solr_vals["object_s"] = model._name
+        solr_vals["id"] = "%s %s %s" % (self.backend_record.name, model._name, record.id)
+        solr_vals["slug_ss"] = self._slug(record)
+        solr_vals["class_name"] = model._name
+        solr_vals["instance_s"] = self.backend_record.name
         solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
+        solr_vals["type"] = model._name.title().replace('.', '')
         for field, descriptor in fields_dict.iteritems():
             solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals)
         return solr_vals
