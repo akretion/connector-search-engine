@@ -36,7 +36,7 @@ def solr_key(field_type):
     return {
             'char': "%s_s",
             'text': "%s_text",
-            'integer': "%s_i",
+            'integer': "%s_it",
             'date': "%s_d",
             'datetime': "%s_dt",
             'float': "%s_f",
@@ -51,8 +51,8 @@ def solr_key(field_type):
 
 
 class SolRExportMapper(ExportMapper):
-
     _export_binaries = False
+    _export_functions = False
 
     def _get_included_relations(self, record):
         return []
@@ -73,15 +73,15 @@ class SolRExportMapper(ExportMapper):
             val = oe_vals.get(field)
             obj = self.session.pool[relation]
             if isinstance(val, (list, tuple)):
-                solr_vals["%s_is" % (field,)] = val[0]
+                solr_vals["%s_its" % (field,)] = val[0]
                 solr_vals["%s_ss" % (field,)] = val[1]
             else:
-                solr_vals["%s_is" % (field,)] = val
+                solr_vals["%s_its" % (field,)] = val
                 val_name = obj.read(cr, uid, [val], [obj._rec_name], context=self.session.context)[0][obj._rec_name]
                 solr_vals["%s_ss" % (field,)] = val_name
 
             if field in included_relations:
-                field_res_id = solr_vals["%s_is" % (field,)]
+                field_res_id = solr_vals["%s_its" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
                 solr_values = self._oe_to_solr(included_record) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
@@ -92,14 +92,20 @@ class SolRExportMapper(ExportMapper):
             obj = self.session.pool.get(relation)
             records = obj.read(self.session.cr, self.session.uid, oe_vals.get(field), [obj._rec_name], context=self.session.context)
             values = []
+            ids = []
             for r in records:
                 rec_name = r[obj._rec_name]
                 if isinstance(rec_name, (list, tuple)): # rec_name is (id, name) of a m2o
-                    rec_name = "%s,%s" % (rec_name[0], rec_name[1])
-                else:
-                    rec_name = ",%s" % (rec_name,)
-                values.append("%s,%s" % (r['id'], rec_name))
-            solr_vals["%s_sms" % (field,)] = values #TODO store ids?
+#                     ids.append(rec_name[0]) # NOTE store somewhere?
+                     rec_name = rec_name[1]
+                ids.append(r['id'])
+                values.append(rec_name)
+            if field_type == 'one2many':
+                key = "%s-%s-o2m_sms" % (field, obj._rec_name)
+            else:
+                key = "%s-%s-m2m_sms" % (field, obj._rec_name)
+            solr_vals[key] = values
+            solr_vals["%s_itms" % (field,)] = ids
 
         elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
             solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
@@ -125,6 +131,8 @@ class SolRExportMapper(ExportMapper):
         solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
         solr_vals["type"] = model._name.title().replace('.', '')
         for field, descriptor in fields_dict.iteritems():
+            if descriptor.get('function') and not descriptor.get('store') and not self._export_functions:
+                continue
             solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals)
         return solr_vals
 
