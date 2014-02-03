@@ -39,16 +39,20 @@ def solr_key(field_type):
             'integer': "%s_i",
             'date': "%s_d",
             'datetime': "%s_dt",
-            'binary': "%s_bin", #useful?
             'float': "%s_f",
             'boolean': "%s_b",
             'many2one': "%s_s",
             'one2many': "%s_sm",
             'many2many': "%s_sm",
+            'binary': "%s_64", # NOTE not coming from Sunspot,
+                               # don't forget to add it in your schema
+                               # if you use the _export_binaries flag
     }.get(field_type, "%s_s")
 
 
 class SolRExportMapper(ExportMapper):
+
+    _export_binaries = False
 
     def _get_included_relations(self, record):
         return []
@@ -60,16 +64,12 @@ class SolRExportMapper(ExportMapper):
         return "%ss" % (solr_key(field_type),) #TODO only add s if field is stored
 
     def _field_to_solr(self, field, field_type, relation, included_relations, oe_vals=None, solr_vals=None):
-
-        #_logger.info('TOTOTOT\n %s %s \n'%(field, field_type))
         if not oe_vals:
             oe_vals = {}
         if not solr_vals:
             solr_vals = {}
-        if field_type in ('char', 'text', 'integer', 'float', 'boolean') and oe_vals.get(field):
-            solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
 
-        elif field_type == 'many2one' and oe_vals.get(field):
+        if field_type == 'many2one' and oe_vals.get(field):
             val = oe_vals.get(field)
             obj = self.session.pool[relation]
             if isinstance(val, (list, tuple)):
@@ -100,6 +100,11 @@ class SolRExportMapper(ExportMapper):
                     rec_name = ",%s" % (rec_name,)
                 values.append("%s,%s" % (r['id'], rec_name))
             solr_vals["%s_sms" % (field,)] = values #TODO store ids?
+
+        elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
+            solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
+        elif field_type != 'binary':
+            solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
         return solr_vals
 
     def oe_to_solr(self, record, fields=None):
