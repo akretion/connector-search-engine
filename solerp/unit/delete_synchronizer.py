@@ -35,4 +35,5 @@ class SolRDeleteSynchronizer(DeleteSynchronizer):
         """
         si = SolrInterface(self.backend_record.location.encode('utf-8')) #TODO auth
         si.delete(solr_id)
+        si.commit()
         return _('Record %s deleted on SolR') % solr_id
