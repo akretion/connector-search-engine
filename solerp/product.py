@@ -38,7 +38,7 @@ class ProductDeleter(SolRDeleteSynchronizer):
 @solr
 class ProductExportMapper(SolRExportMapper):
     _model_name = ['product.product']
-    _export_binaries = True
+#    _export_binaries = True
 
     def _get_included_relations(self, record):
         return ['categ_id']
