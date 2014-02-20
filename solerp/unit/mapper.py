@@ -34,7 +34,8 @@ _logger = logging.getLogger(__name__)
 def solr_key(field_type):
     """ modeled after Sunspot dynamic fields: https://github.com/sunspot/sunspot/blob/master/sunspot_solr/solr/solr/conf/schema.xml """
     return {
-            'char': "%s_s",
+            'selection': "%s_s",
+            'char': "%s_s", # use copyField to text in your schema if you need to
             'text': "%s_text",
             'integer': "%s_it",
             'date': "%s_d",
@@ -86,26 +87,33 @@ class SolRExportMapper(ExportMapper):
                 solr_values = self._oe_to_solr(included_record, None, oe_vals) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
 #                    if rel_k not in ["id", "slug_ss", "text", "class_name", "instance_s", "type"]:
-                     solr_vals["%s_%s" % (field, rel_k)] = solr_values[rel_k]
+                     solr_vals["%s/%s" % (field, rel_k)] = solr_values[rel_k]
 
         elif field_type in ('one2many', 'many2many') and oe_vals.get(field):
             obj = self.session.pool.get(relation)
             records = obj.read(self.session.cr, self.session.uid, oe_vals.get(field), [obj._rec_name], context=self.session.context)
-            values = []
             ids = []
+            flat_vals = []
+            m2o_vals = []
+            m2o_ids = []
             for r in records:
+                ids.append(r['id'])
                 rec_name = r[obj._rec_name]
                 if isinstance(rec_name, (list, tuple)): # rec_name is (id, name) of a m2o
-#                     ids.append(rec_name[0]) # NOTE store somewhere?
-                     rec_name = rec_name[1]
-                ids.append(r['id'])
-                values.append(rec_name)
-            if field_type == 'one2many':
-                key = "%s-%s-o2m_sms" % (field, obj._rec_name)
-            else:
-                key = "%s-%s-m2m_sms" % (field, obj._rec_name)
-            solr_vals[key] = values
+                    m2o_ids.append(rec_name[0])
+                    m2o_vals.append(rec_name[1])
+                else:
+                    flat_vals.append(rec_name)
             solr_vals["%s_itms" % (field,)] = ids
+            if field_type == 'one2many':
+                rel = "o2m"
+            else:
+                rel = "m2m"
+            if flat_vals:
+                solr_vals["%s-%s-%s_sms" % (field, obj._rec_name, rel)] = flat_vals
+            else:
+                solr_vals["%s-%s-%s-m2o_sms" % (field, obj._rec_name, rel)] = m2o_vals 
+                solr_vals["%s-%s-%s-m2o_itms" % (field, obj._rec_name, rel)] = m2o_ids
 
         elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
             solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
