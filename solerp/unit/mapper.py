@@ -74,15 +74,15 @@ class SolRExportMapper(ExportMapper):
             val = oe_vals.get(field)
             obj = self.session.pool[relation]
             if isinstance(val, (list, tuple)):
-                solr_vals["%s_its" % (field,)] = val[0]
-                solr_vals["%s-%s-m2o_ss" % (field, obj._rec_name)] = val[1]
+                solr_vals["%s/id_its" % (field,)] = val[0]
+                solr_vals["%s/%s_ss" % (field, obj._rec_name)] = val[1]
             else:
-                solr_vals["%s_its" % (field,)] = val
+                solr_vals["%s/id_its" % (field,)] = val
                 val_name = obj.read(cr, uid, [val], [obj._rec_name], context=self.session.context)[0][obj._rec_name]
-                solr_vals["%s-%s-m2o_ss" % (field, obj._rec_name)] = val_name
+                solr_vals["%s/%s_ss" % (field, obj._rec_name)] = val_name
 
             if field in included_relations:
-                field_res_id = solr_vals["%s_its" % (field,)]
+                field_res_id = solr_vals["%s/id_its" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
                 solr_values = self._oe_to_solr(included_record, None, oe_vals) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
