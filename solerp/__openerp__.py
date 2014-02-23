@@ -57,7 +57,7 @@ we store it in the key names whenever required.
 **m2o**
 
 The Many To One associations got their id stored in field/id_its
-And it get its description stored in field/name_ss where name is the name
+And it get its description stored in field/{name}_ss where {name} is the name
 of the field carrying the description in the related object (_recname)
 
 **denormalized m2o**
@@ -66,7 +66,7 @@ A Many To One can be denormalized into the current flat SolR record.
 For that, the containing object needs to have its _included_relations
 listing the keys of the m2o associations you want to denormalize.
 The denormalized data follows the same conventions describded here, except that
-in the flat record, it's prefixed by field/ where field is the name of the m2o
+in the flat record, it's prefixed by {field}/ where field is the name of the m2o
 field. This works recursively!
 
 **o2m and m2m**
@@ -79,14 +79,15 @@ you can consider indexing the object in the o2m and dernomalizing the former
 object into it instead. Or you can also index several kind of OpenERP objects
 into SolR and fake joins in your SolR app.
 
-The ids of the o2m or m2m association are stored as: field_itms
+The ids of the o2m or m2m association are stored as: {field}/id_itms
 
 If the description of the items is a text field, the different values are
-stored in the same order in field-name-o2m_sms where name is the name of the
-description field (replace o2m by m2m for many to many fields)
+stored in the same order in {field}/{name}_sms where name is the name of the
+description field.
 
 If instead the description of an item is carried by a m2o field, then
-the ids are stored in field-name-o2m-m2o_itms (m2m for many to many).
+the ids are stored in {field}/{name}/{m2o-name}_sms where name is the rec_name
+of the x2m field and m2o-name is the rec_name of the m2o field.
 
 
 supported objects

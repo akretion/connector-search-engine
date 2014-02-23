@@ -104,16 +104,12 @@ class SolRExportMapper(ExportMapper):
                     m2o_vals.append(rec_name[1])
                 else:
                     flat_vals.append(rec_name)
-            solr_vals["%s_itms" % (field,)] = ids
-            if field_type == 'one2many':
-                rel = "o2m"
-            else:
-                rel = "m2m"
+            solr_vals["%s/id_itms" % (field,)] = ids
             if flat_vals:
-                solr_vals["%s-%s-%s_sms" % (field, obj._rec_name, rel)] = flat_vals
+                solr_vals["%s/%s_sms" % (field, obj._rec_name)] = flat_vals
             else:
-                solr_vals["%s-%s-%s-m2o_sms" % (field, obj._rec_name, rel)] = m2o_vals 
-                solr_vals["%s-%s-%s-m2o_itms" % (field, obj._rec_name, rel)] = m2o_ids
+                solr_vals["%s/%s/%s_sms" % (field, obj._rec_name, "name")] = m2o_vals #FIXME shouldn't be hardcoded
+                solr_vals["%s/%s/id_itms" % (field, obj._rec_name)] = m2o_ids
 
         elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
             solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
