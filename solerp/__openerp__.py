@@ -48,19 +48,17 @@ the object class along with the database record id.
 Instead we store the OpenERP backend name, the OpenERP object name and the id.
 Hence our id is guaranted to be unique, even with several OpenERP databases.
 
-As SolR is flat NoSQL, it means we are using extra conventions on field names to be
-able to reconstruct the associations when iterating over the field keys.
-As OpenERP is not exposing what it calls the object _rec_name in RPC by default,
-we are storing it in the key names whenever required.
+As SolR is flat NoSQL, it means we are using extra conventions on field names
+to be able to reconstruct the associations when iterating over the field keys.
+Most of the time the OpenERP "_rec_name" field is "name", but not always and
+OpenERP is not exposing what it calls the object _rec_name in RPC by default so
+we store it in the key names whenever required.
 
 **m2o**
 
-The Many To One associations got their id stored in field_its
-And it get its description stored in field-name-m2o_ss where name is the name
-of the field carrying the description in the related object.
-
-Using the hyphen separator cannot conflict with field as hyphen is not valid
-in the name of a python variable.
+The Many To One associations got their id stored in field/id_its
+And it get its description stored in field/name_ss where name is the name
+of the field carrying the description in the related object (_recname)
 
 **denormalized m2o**
 
