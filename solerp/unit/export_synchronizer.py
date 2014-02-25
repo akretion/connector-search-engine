@@ -86,9 +86,13 @@ class SolRExportSynchronizer(SolRBaseExportSynchronizer):
         """ Export the dependencies for the record"""
         return
 
-    def _map_data(self, fields=None):
+    def _map_data(self):
         """ Convert the external record to OpenERP """
-        self.mapper.convert(self.binding_record, fields=fields)
+        return self.mapper.map_record(self.binding_record)
+
+    def _create_data(self, map_record, fields=None, **kwargs):
+        """ Get the data to pass to :py:meth:`_create` """
+        return map_record.values(for_create=True, fields=fields, **kwargs)
 
     def _create(self, data):
         """ Create the SolR record """
@@ -99,8 +103,8 @@ class SolRExportSynchronizer(SolRBaseExportSynchronizer):
         assert self.binding_id
         assert self.binding_record
 
-        self._map_data(fields=fields)
-        record = self.mapper.data
+        map_record = self._map_data()
+        record = self._create_data(map_record, fields=fields)
         si = SolrInterface(self.backend_record.location.encode('utf-8')) #TODO auth
         si.add(record)
         si.commit()

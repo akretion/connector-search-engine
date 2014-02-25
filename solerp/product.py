@@ -39,17 +39,15 @@ class ProductDeleter(SolRDeleteSynchronizer):
 class ProductExportMapper(SolRExportMapper):
     _model_name = ['product.product']
 #    _export_binaries = True
-
-    def _get_included_relations(self, record):
-        return ['categ_id']
+    _included_relations = ['categ_id']
 
 @on_record_write(model_names='product.product')
-def solr_product_modified(session, model_name, record_id, fields=None):
-    export_record.delay(session, model_name, record_id, fields=fields, priority=20)
+def solr_product_modified(session, model_name, record_id, vals):
+    export_record.delay(session, model_name, record_id)
 
 @on_record_create(model_names='product.product')
-def solr_product_modified(session, model_name, record_id, fields=None):
-    export_record.delay(session, model_name, record_id, fields=fields, priority=20)
+def solr_product_modified(session, model_name, record_id, vals):
+    export_record.delay(session, model_name, record_id)
 
 @on_record_unlink(model_names='product.product')
 def delay_unlink(session, model_name, record_id):
@@ -72,7 +70,7 @@ def export_delete_record(session, model_name, record_id):
     for backend in session.browse('solr.backend', backend_ids):
         env = get_environment(session, model_name, backend.id)
         deleter = env.get_connector_unit(ProductDeleter)
-        solr_id = "%s-%s" % (backend.name, record_id)
+        solr_id = "%s %s %s" % (backend.name, model_name, record_id)
         res = deleter.run(solr_id)
     return res
 

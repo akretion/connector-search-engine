@@ -84,7 +84,7 @@ class SolRExportMapper(ExportMapper):
             if field in included_relations:
                 field_res_id = solr_vals["%s/id_its" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
-                solr_values = self._oe_to_solr(included_record, None, oe_vals) #TODO find object specific Mapper ?
+                solr_values = self._oe_to_solr(included_record, oe_vals) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
 #                    if rel_k not in ["id", "slug_ss", "text", "class_name", "instance_s", "type"]:
                      solr_vals["%s/%s" % (field, rel_k)] = solr_values[rel_k]
@@ -120,8 +120,8 @@ class SolRExportMapper(ExportMapper):
                 solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
         return solr_vals
 
-    def oe_to_solr(self, record, fields=None):
-        return self._oe_to_solr(record, fields)
+    def oe_to_solr(self, record):
+        return self._oe_to_solr(record)
 
     def _get_fields(self, model):
         if self._only_fields:
@@ -133,7 +133,7 @@ class SolRExportMapper(ExportMapper):
         fields = [k for k in fields if k not in self._skip_fields]
         return fields_dict, fields
 
-    def _oe_to_solr(self, record, changed_fields=None, parent_vals=None):
+    def _oe_to_solr(self, record, parent_vals=None):
         model = record._model
         fields_dict, fields = self._get_fields(model)
         oe_vals = model.read(self.session.cr, self.session.uid, [record.id], fields, context=self.session.context)[0]
@@ -167,6 +167,16 @@ class SolRExportMapper(ExportMapper):
     def _slug(self, record): #NOTE in an SEO/web prospective, mais SolR id is a name instead of of the OpenERP id
         return "/".join(self._slug_parts(record))
 
-    def convert(self, record, fields=None):
-        self._convert(record, fields)
-        self._data.update(self.oe_to_solr(record, fields))
+    def finalize(self, map_record, values):
+        """ Called at the end of the mapping.
+
+        Can be used to modify the values before returning them, as the
+        ``on_change``.
+
+        :param map_record: source map_record
+        :type map_record: :py:class:`MapRecord`
+        :param values: mapped values
+        :returns: mapped values
+        :rtype: dict
+        """
+        return self.oe_to_solr(map_record._source)
