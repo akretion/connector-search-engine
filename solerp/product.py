@@ -38,8 +38,15 @@ class ProductDeleter(SolRDeleteSynchronizer):
 @solr
 class ProductExportMapper(SolRExportMapper):
     _model_name = ['product.product']
-#    _export_binaries = True
-    included_relations = ['categ_id']
+    layout = (
+# example of fields/associations layout DSL as follow:
+#        '+include_field',
+#        '-skip_field',
+#        'only_field',
+        ('categ_id', ()), #all
+#        ('uom_id', ()),
+        ('seller_ids', ('qty',))
+    )
 
 @on_record_write(model_names='product.product')
 def solr_product_modified(session, model_name, record_id, vals):

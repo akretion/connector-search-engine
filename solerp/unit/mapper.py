@@ -54,18 +54,21 @@ def solr_key(field_type):
 class SolRExportMapper(ExportMapper):
     _export_binaries = False
     _export_functions = False
-    only = []
-    skip = []
-    include = []
-    included_relations = []
-
-    def _get_included_relations(self, record):
-        return self.included_relations
+    layout = (
+# example of fields/associations layout DSL as follow:
+# TODO offer a way to build it from a custom ir_exports
+#        '+include_field',
+#        '-skip_field',
+#        'only_field',
+#        ('categ_id', ()), #all
+#        ('uom_id', ()),
+#        ('image_ids', ('url',))
+    )
 
     def _solr_key(self, field_type):
         return "%ss" % (solr_key(field_type),) #TODO only add s if field is stored
 
-    def _field_to_solr(self, field, field_type, relation, included_relations, oe_vals=None, solr_vals=None):
+    def _field_to_solr(self, field, field_type, relation, oe_vals=None, solr_vals=None, association_layout=None):
         if not oe_vals:
             oe_vals = {}
         if not solr_vals:
@@ -82,21 +85,23 @@ class SolRExportMapper(ExportMapper):
                 val_name = obj.read(cr, uid, [val], [obj._rec_name], context=self.session.context)[0][obj._rec_name]
                 solr_vals["%s/%s_ss" % (field, obj._rec_name)] = val_name
 
-            if field in included_relations:
+            if association_layout is not None:
                 field_res_id = solr_vals["%s/id_its" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
-                solr_values = self._oe_to_solr(included_record, oe_vals) #TODO find object specific Mapper ?
+                solr_values = self._oe_to_solr(included_record, oe_vals, association_layout) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
 #                    if rel_k not in ["id", "slug_ss", "text", "class_name", "instance_s", "type"]:
                      solr_vals["%s/%s" % (field, rel_k)] = solr_values[rel_k]
 
         elif field_type in ('one2many', 'many2many') and oe_vals.get(field):
             obj = self.session.pool.get(relation)
-            records = obj.read(self.session.cr, self.session.uid, oe_vals.get(field), [obj._rec_name], context=self.session.context)
+            x2m_fields = (association_layout or ()) + (obj._rec_name,)
+            records = obj.read(self.session.cr, self.session.uid, oe_vals.get(field), x2m_fields, context=self.session.context)
             ids = []
             flat_vals = []
             m2o_vals = []
             m2o_ids = []
+            extra_vals = {}
             for r in records:
                 ids.append(r['id'])
                 rec_name = r[obj._rec_name]
@@ -105,12 +110,19 @@ class SolRExportMapper(ExportMapper):
                     m2o_vals.append(rec_name[1])
                 else:
                     flat_vals.append(rec_name)
+                for i in (association_layout or ()):
+                    if extra_vals.get(i):
+                        extra_vals[i].append(r[i])
+                    else:
+                        extra_vals[i] = [r[i]]
             solr_vals["%s/id_itms" % (field,)] = ids
             if flat_vals:
                 solr_vals["%s/%s_sms" % (field, obj._rec_name)] = flat_vals
             else:
                 solr_vals["%s/%s/%s_sms" % (field, obj._rec_name, "name")] = m2o_vals #FIXME shouldn't be hardcoded
                 solr_vals["%s/%s/id_itms" % (field, obj._rec_name)] = m2o_ids
+            for i in (association_layout or ()):
+                solr_vals["%s/%s_sms" % (field, i)] = extra_vals[i] # FIXME not always _sms
 
         elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
             solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
@@ -122,33 +134,37 @@ class SolRExportMapper(ExportMapper):
         return solr_vals
 
     def oe_to_solr(self, record):
-        return self._oe_to_solr(record)
+        return self._oe_to_solr(record, None, self.layout)
 
-    def _get_fields(self, model):
-        if self.only:
+    def _get_fields(self, model, layout):
+        if layout is None:
+            layout = []
+        only = [i for i in layout if type(i) == str and '+' not in i and '-' not in i]
+        include = [i for i in layout if type(i) == str and '+' in i]
+        skip = [i for i in layout if type(i) == str and '-' in i]
+        if only:
             fields = self.only
             fields_dict = model.fields_get(self.session.cr, self.session.uid, allfields=fields, context=self.session.context)
         else:
             fields_dict = model.fields_get(self.session.cr, self.session.uid, context=self.session.context)
             fields = fields_dict.keys()
-        fields = []
+        export_fields = []
         for k in fields:
             descriptor = fields_dict[k]
             if descriptor.get('function'):
                 if descriptor.get('store'):
-                    fields.append(k)
-                elif self._export_functions or k in self.include:
-                    fields.append(k)
-            elif k not in self.skip:
-                fields.append(k)
-        return fields_dict, fields
+                    export_fields.append(k)
+                elif self._export_functions or k in include:
+                    export_fields.append(k)
+            elif k not in skip:
+                export_fields.append(k)
+        return fields_dict, export_fields
 
-    def _oe_to_solr(self, record, parent_vals=None):
+    def _oe_to_solr(self, record, parent_vals=None, layout=None):
         model = record._model
-        fields_dict, fields = self._get_fields(model)
+        fields_dict, fields = self._get_fields(model, layout)
         oe_vals = model.read(self.session.cr, self.session.uid, [record.id], fields, context=self.session.context)[0]
         # NOTE pre-read records by chunks of several ids to optimize?
-        included_relations = self._get_included_relations(record)
         #TODO allow to have indexed fields not stored, read that in ir.fields eventually + cache that in the session
         solr_vals = {}
         if not parent_vals:
@@ -158,7 +174,12 @@ class SolRExportMapper(ExportMapper):
             solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
         for field in fields:
             descriptor = fields_dict[field]
-            solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals)
+            association_layout = None
+            for i in layout:
+                if type(i) in (list, tuple) and i[0].replace('+', '').replace('-', '') == field:
+                    association_layout = i[1]
+                    break
+            solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), oe_vals, solr_vals, association_layout)
         return solr_vals
 
     def _slug_parts(self, record):
