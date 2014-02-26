@@ -54,12 +54,13 @@ def solr_key(field_type):
 class SolRExportMapper(ExportMapper):
     _export_binaries = False
     _export_functions = False
-    _only_fields = []
-    _skip_fields = []
-    _included_relations = []
+    only = []
+    skip = []
+    include = []
+    included_relations = []
 
     def _get_included_relations(self, record):
-        return self._included_relations
+        return self.included_relations
 
     def _solr_key(self, field_type):
         return "%ss" % (solr_key(field_type),) #TODO only add s if field is stored
@@ -124,13 +125,22 @@ class SolRExportMapper(ExportMapper):
         return self._oe_to_solr(record)
 
     def _get_fields(self, model):
-        if self._only_fields:
-            fields = self._only_fields
+        if self.only:
+            fields = self.only
             fields_dict = model.fields_get(self.session.cr, self.session.uid, allfields=fields, context=self.session.context)
         else:
             fields_dict = model.fields_get(self.session.cr, self.session.uid, context=self.session.context)
             fields = fields_dict.keys()
-        fields = [k for k in fields if k not in self._skip_fields]
+        fields = []
+        for k in fields:
+            descriptor = fields_dict[k]
+            if descriptor.get('function'):
+                if descriptor.get('store'):
+                    fields.append(k)
+                elif self._export_functions or k in self.include:
+                    fields.append(k)
+            elif k not in self.skip:
+                fields.append(k)
         return fields_dict, fields
 
     def _oe_to_solr(self, record, parent_vals=None):
@@ -144,14 +154,10 @@ class SolRExportMapper(ExportMapper):
         if not parent_vals:
             solr_vals["id"] = "%s %s %s" % (self.backend_record.name, model._name, record.id)
             solr_vals["slug_ss"] = self._slug(record)
-            solr_vals["class_name"] = model._name
             solr_vals["instance_ss"] = self.backend_record.name
             solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
-            solr_vals["type"] = model._name.title().replace('.', '')
         for field in fields:
             descriptor = fields_dict[field]
-            if descriptor.get('function') and not descriptor.get('store') and not self._export_functions:
-                continue
             solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), included_relations, oe_vals, solr_vals)
         return solr_vals
 

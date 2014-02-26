@@ -39,7 +39,7 @@ class ProductDeleter(SolRDeleteSynchronizer):
 class ProductExportMapper(SolRExportMapper):
     _model_name = ['product.product']
 #    _export_binaries = True
-    _included_relations = ['categ_id']
+    included_relations = ['categ_id']
 
 @on_record_write(model_names='product.product')
 def solr_product_modified(session, model_name, record_id, vals):
