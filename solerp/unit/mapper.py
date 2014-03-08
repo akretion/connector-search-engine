@@ -144,7 +144,10 @@ class SolRExportMapper(ExportMapper):
             if field_type == 'boolean':
                 solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
             elif oe_vals.get(field):
-                solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
+                if association_layout:
+                    solr_vals[association_layout.replace('-', '_')] = oe_vals.get(field)
+                else:
+                    solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
         return solr_vals
 
     def oe_to_solr(self, record):
@@ -200,6 +203,8 @@ class SolRExportMapper(ExportMapper):
                 if type(i) in (list, tuple) and i[0].replace('+', '').replace('-', '') == field:
                     association_layout = i[1]
                     break
+                elif ("%s-" % (field,)) in i: #custom_suffix
+                    association_layout = i
             solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), oe_vals, solr_vals, association_layout)
         return solr_vals
 
