@@ -72,7 +72,7 @@ class SolRExportMapper(ExportMapper):
         else:
             return "%ss" % (solr_key(field_type),) #TODO only add s if field is stored
 
-    def _field_to_solr(self, field, field_type, relation, oe_vals=None, solr_vals=None, association_layout=None):
+    def _field_to_solr(self, field, field_type, relation, oe_vals=None, solr_vals=None, field_layout=None):
         if not oe_vals:
             oe_vals = {}
         if not solr_vals:
@@ -89,17 +89,17 @@ class SolRExportMapper(ExportMapper):
                 val_name = obj.read(cr, uid, [val], [obj._rec_name], context=self.session.context)[0][obj._rec_name]
                 solr_vals["%s/%s_ss" % (field, obj._rec_name)] = val_name
 
-            if association_layout is not None:
+            if field_layout is not None:
                 field_res_id = solr_vals["%s/id_its" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
-                solr_values = self._oe_to_solr(included_record, oe_vals, association_layout) #TODO find object specific Mapper ?
+                solr_values = self._oe_to_solr(included_record, oe_vals, field_layout) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
                      solr_vals["%s/%s" % (field, rel_k)] = solr_values[rel_k]
 
         elif field_type in ('one2many', 'many2many') and oe_vals.get(field):
             obj = self.session.pool.get(relation)
-            if association_layout:
-                x2m_fields = [self.norm(i) for i in association_layout] + [obj._rec_name]
+            if field_layout:
+                x2m_fields = [self.norm(i) for i in field_layout] + [obj._rec_name]
                 x2m_fields_dict = obj.fields_get(self.session.cr, self.session.uid, allfields=x2m_fields, context=self.session.context)
             else:
                 x2m_fields = [obj._rec_name]
@@ -144,8 +144,8 @@ class SolRExportMapper(ExportMapper):
             if field_type == 'boolean':
                 solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
             elif oe_vals.get(field):
-                if association_layout:
-                    solr_vals[association_layout.replace('-', '_')] = oe_vals.get(field)
+                if field_layout:
+                    solr_vals[field_layout.replace('-', '_')] = oe_vals.get(field)
                 else:
                     solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
         return solr_vals
@@ -198,14 +198,14 @@ class SolRExportMapper(ExportMapper):
             solr_vals["type"] = model._name.title().replace('.', '')
         for field in fields:
             descriptor = fields_dict[field]
-            association_layout = None
-            for i in layout:
+            field_layout = None
+            for i in layout: #TODO implement + / - to add / remove fields
                 if type(i) in (list, tuple) and i[0].replace('+', '').replace('-', '') == field:
-                    association_layout = i[1]
+                    field_layout = i[1]
                     break
                 elif ("%s-" % (field,)) in i: #custom_suffix
-                    association_layout = i
-            solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), oe_vals, solr_vals, association_layout)
+                    field_layout = i
+            solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), oe_vals, solr_vals, field_layout)
         return solr_vals
 
     def _slug_parts(self, record):
