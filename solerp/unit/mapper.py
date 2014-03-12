@@ -36,7 +36,7 @@ def solr_key(field_type):
     return {
             'selection': "%s_s",
             'char': "%s_s", # use copyField to text in your schema if you need to
-            'text': "%s_text",
+            'text': "%s_s",
             'integer': "%s_it",
             'date': "%s_d",
             'datetime': "%s_dt",
