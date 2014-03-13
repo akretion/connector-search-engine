@@ -37,7 +37,7 @@ def solr_key(field_type):
             'selection': "%s_s",
             'char': "%s_s", # use copyField to text in your schema if you need to
             'text': "%s_s",
-            'integer': "%s_it",
+            'integer': "%s_i",
             'date': "%s_d",
             'datetime': "%s_dt",
             'float': "%s_f",
@@ -82,15 +82,15 @@ class SolRExportMapper(ExportMapper):
             val = oe_vals.get(field)
             obj = self.session.pool[relation]
             if isinstance(val, (list, tuple)):
-                solr_vals["%s/id_its" % (field,)] = val[0]
+                solr_vals["%s/id_is" % (field,)] = val[0]
                 solr_vals["%s/%s_ss" % (field, obj._rec_name)] = val[1]
             else:
-                solr_vals["%s/id_its" % (field,)] = val
+                solr_vals["%s/id_is" % (field,)] = val
                 val_name = obj.read(cr, uid, [val], [obj._rec_name], context=self.session.context)[0][obj._rec_name]
                 solr_vals["%s/%s_ss" % (field, obj._rec_name)] = val_name
 
             if field_layout is not None:
-                field_res_id = solr_vals["%s/id_its" % (field,)]
+                field_res_id = solr_vals["%s/id_is" % (field,)]
                 included_record = obj.browse(self.session.cr, self.session.uid, field_res_id, context=self.session.context)
                 solr_values = self._oe_to_solr(included_record, oe_vals, field_layout) #TODO find object specific Mapper ?
                 for rel_k in solr_values.keys():
@@ -123,12 +123,12 @@ class SolRExportMapper(ExportMapper):
                         extra_vals[i].append(r[i])
                     else:
                         extra_vals[i] = [r[i]]
-            solr_vals["%s/id_itms" % (field,)] = ids
+            solr_vals["%s/id_ims" % (field,)] = ids
             if flat_vals:
                 solr_vals["%s/%s_sms" % (field, obj._rec_name)] = flat_vals
             else:
                 solr_vals["%s/%s/%s_sms" % (field, obj._rec_name, "name")] = m2o_vals #FIXME shouldn't be hardcoded
-                solr_vals["%s/%s/id_itms" % (field, obj._rec_name)] = m2o_ids
+                solr_vals["%s/%s/id_ims" % (field, obj._rec_name)] = m2o_ids
             for i in x2m_fields:
                 f_type = x2m_fields_dict[i]['type']
                 sub_key = self._solr_key(f_type, True) % (i,)
