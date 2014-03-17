@@ -140,7 +140,7 @@ class SolRExportMapper(ExportMapper):
 
         elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
             solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
-        elif field_type != 'binary':
+        elif field_type not in ('binary', 'serialized'):
             if field_type == 'boolean':
                 solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
             elif oe_vals.get(field):
