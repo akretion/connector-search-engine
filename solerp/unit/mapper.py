@@ -166,7 +166,7 @@ class SolRExportMapper(ExportMapper):
         include = [self.norm(i) for i in layout if type(i) == str and '+' in i]
         skip = [self.norm(i) for i in layout if type(i) == str and '-' in i]
         if only:
-            fields = self.only
+            fields = only
             fields_dict = model.fields_get(self.session.cr, self.session.uid, allfields=fields, context=self.session.context)
         else:
             fields_dict = model.fields_get(self.session.cr, self.session.uid, context=self.session.context)
