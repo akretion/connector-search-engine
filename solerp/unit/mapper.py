@@ -175,7 +175,7 @@ class SolRExportMapper(ExportMapper):
         for k in fields:
             descriptor = fields_dict[k]
             if descriptor.get('function'):
-                if descriptor.get('store'):
+                if descriptor.get('store') or k.startswith('x_'):
                     export_fields.append(k)
                 elif self._export_functions or k in include:
                     export_fields.append(k)
