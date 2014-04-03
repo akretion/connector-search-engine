@@ -53,9 +53,15 @@ def solr_key(field_type):
     }.get(field_type, "%s_s")
 
 
+@solr
 class SolRExportMapper(ExportMapper):
     _export_binaries = False
     _export_functions = False
+
+    @classmethod
+    def match(cls, session, model):
+        return True #We are a generic mapper; how cool is that?
+
     layout = (
 # example of fields/associations layout DSL as follow:
 # TODO offer a way to build it from a custom ir_exports
@@ -152,9 +158,6 @@ class SolRExportMapper(ExportMapper):
                     solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
         return solr_vals
 
-    def oe_to_solr(self, record):
-        return self._oe_to_solr(record, None, self.layout)
-
     def norm(self, item):
         if type(item) == str:
             return item.replace('-', '').replace('+', '').split('-')[0]
@@ -235,4 +238,4 @@ class SolRExportMapper(ExportMapper):
         :returns: mapped values
         :rtype: dict
         """
-        return self.oe_to_solr(map_record._source)
+        return self._oe_to_solr(map_record._source, None, self.layout)

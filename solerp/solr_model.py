@@ -19,6 +19,7 @@
 #
 ##############################################################################
 
+import time
 import logging
 from datetime import datetime
 from openerp.osv import fields, orm
@@ -64,25 +65,20 @@ class solr_backend(orm.Model):
                  "will be imported in the translation of this language."),
     }
 
-    def _solr_backend(self, cr, uid, callback, domain=None, context=None):
-        if domain is None:
-            domain = []
-        ids = self.search(cr, uid, domain, context=context)
-        if ids:
-            callback(cr, uid, ids, context=context)
-
-
-    @job
     def index_all(self, cr, uid, ids, context=None):
-
-        import product
+        import product #TODO don't import example
         session = ConnectorSession(cr,uid,context)
         product_obj = self.pool.get('product.product')
-        for i in product_obj.search(cr, uid, [], context=context):
+        p_ids = product_obj.search(cr, uid, [], context=context)
+#        p_ids = product_obj.search(cr, uid, [['id', '<', 34962], ['id', '>', '14000']], context=context)
+        c = 0
+        for i in p_ids:
             _logger.info(i)
-            product.export_record(session,'product.product',i,['name'])
-
-
+            product.export_record.delay(session, 'product.product', i, commit=False) #TODO loop over objects listed in backend (or having new mixin TODO)
+            c += 1
+            if c > 500:
+                cr.commit()
+                c = 0
 
     def output_recorder(self, cr, uid, ids, context=None):
         """ Utility method to output a file containing all the recorded
