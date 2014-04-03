@@ -20,6 +20,8 @@
 ##############################################################################
 
 from slugify import slugify
+
+from openerp import tools
 from openerp.tools.translate import _
 from openerp.addons.connector.unit.mapper import (
     mapping,
@@ -159,6 +161,7 @@ class SolRExportMapper(ExportMapper):
         elif type(item) in (list, tuple):
             return self.norm(item[0])
 
+    @tools.ormcache() #TODO invalid that cache when changing a model def? (for now just restart)
     def _get_fields(self, model, layout):
         if layout is None:
             layout = []
