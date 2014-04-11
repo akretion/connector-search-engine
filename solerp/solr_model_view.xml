@@ -27,6 +27,9 @@
                                 <field name="username" colspan="2"/>
                                 <field name="password" colspan="2"/>
                             </group>
+                            <group>
+                                <field name="export_ids" colspan="4"/>
+                            </group>
                         </group>
                     </sheet>
                 </form>
@@ -50,6 +53,27 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_solr_backend_tree"/>
+        </record>
+
+        <record id="view_solr_exports_form" model="ir.ui.view">
+            <field name="name">solr.exports.form</field>
+            <field name="model">ir.exports</field>
+            <field name="arch" type="xml">
+                <form string="Export" version="7.0">
+                    <sheet>
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" class="oe_inline" />
+                        </h1>
+                        <group name="solr" string="Export Configuration">
+                            <group colspan="4" col="4">
+                                <field name="resource" colspan="4"/>
+                                <field name="export_fields" colspan="4"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
         </record>
 
     </data>

@@ -63,6 +63,7 @@ class solr_backend(orm.Model):
             'Default Language',
             help="If a default language is selected, the records "
                  "will be imported in the translation of this language."),
+        'export_ids': fields.many2many('ir.exports', 'solr_backend_ir_exports_rel', 'backend_id', 'export_id', 'Exports', help="Associate here the exports to this Solr backend"),
     }
 
     def index_all(self, cr, uid, ids, context=None):
