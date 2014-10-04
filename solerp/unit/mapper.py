@@ -156,7 +156,8 @@ class SolRExportMapper(ExportMapper):
                 matches = [i for i in descriptor["selection"] if i[0] == val]
                 if matches:
                     label = matches[0][1]
-                    solr_vals[self._solr_key(field_type) % (field, )] = label # TODO do we want values too?
+                    solr_vals[self._solr_key(field_type) % (field, )] = label
+                    solr_vals["%s_k_ss" % (field, )] = val
             elif field_type == 'boolean':
                 solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
             elif oe_vals.get(field):
