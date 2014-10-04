@@ -80,7 +80,9 @@ class SolRExportMapper(ExportMapper):
         else:
             return "%ss" % (solr_key(field_type),) #TODO only add s if field is stored
 
-    def _field_to_solr(self, field, field_type, relation, oe_vals=None, solr_vals=None, field_layout=None):
+    def _field_to_solr(self, field, descriptor, oe_vals=None, solr_vals=None, field_layout=None):
+        field_type = descriptor['type']
+        relation = descriptor.get('relation')
         if not oe_vals:
             oe_vals = {}
         if not solr_vals:
@@ -149,7 +151,13 @@ class SolRExportMapper(ExportMapper):
         elif field_type == 'binary' and self._export_binaries and oe_vals.get(field):
             solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
         elif field_type not in ('binary', 'serialized'):
-            if field_type == 'boolean':
+            if field_type == 'selection':
+                val = oe_vals.get(field)
+                matches = [i for i in descriptor["selection"] if i[0] == val]
+                if matches:
+                    label = matches[0][1]
+                    solr_vals[self._solr_key(field_type) % (field, )] = label # TODO do we want values too?
+            elif field_type == 'boolean':
                 solr_vals[self._solr_key(field_type) % (field, )] = oe_vals.get(field)
             elif oe_vals.get(field):
                 if field_layout:
@@ -211,7 +219,7 @@ class SolRExportMapper(ExportMapper):
                     break
                 elif ("%s-" % (field,)) in i: #custom_suffix
                     field_layout = i
-            solr_vals = self._field_to_solr(field, descriptor['type'], descriptor.get('relation'), oe_vals, solr_vals, field_layout)
+            solr_vals = self._field_to_solr(field, descriptor, oe_vals, solr_vals, field_layout)
         return solr_vals
 
     def _slug_parts(self, record):
