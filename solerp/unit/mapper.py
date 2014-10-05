@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Copyright (C) 2013 Akretion (http://www.akretion.com/)
+#    Copyright (C) 2013-2014 Akretion (http://www.akretion.com/)
 #    @author: Raphaël Valyi <raphael.valyi@akretion.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -54,16 +54,19 @@ def solr_key(field_type):
 
 
 @solr
-class SolRExportMapper(ExportMapper):
+class SolrExportMapper(ExportMapper):
     _export_binaries = False
     _export_functions = False
 
     @classmethod
     def match(cls, session, model):
-        return True #We are a generic mapper; how cool is that?
+        if cls.model_name is None:
+            return True # we are a generic mapper; how cool is that?
+        else: # custom backend
+            return super(SolrExportMapper, cls).match(session, model)
 
     layout = (
-# example of fields/associations layout DSL as follow:
+# example of fields/associations layout DSL as follow; override it in your custom backend!
 # TODO offer a way to build it from a custom ir_exports
 #        '+include_field',
 #        '-skip_field',
@@ -209,12 +212,12 @@ class SolRExportMapper(ExportMapper):
             solr_vals["id"] = "%s %s %s" % (self.backend_record.name, model._name, record.id)
             solr_vals["slug_ss"] = self._slug(record)
             solr_vals["instance_ss"] = self.backend_record.name
-            solr_vals["text"] = oe_vals.get(model._rec_name) #TODO change or remove?
+            solr_vals["text"] = oe_vals.get(model._rec_name) # TODO change or remove?
             solr_vals["type"] = model._name.title().replace('.', '')
         for field in fields:
             descriptor = fields_dict[field]
             field_layout = None
-            for i in layout: #TODO implement + / - to add / remove fields
+            for i in layout: # TODO implement + / - to add / remove fields
                 if type(i) in (list, tuple) and i[0].replace('+', '').replace('-', '') == field:
                     field_layout = i[1]
                     break
@@ -227,12 +230,14 @@ class SolRExportMapper(ExportMapper):
         raw_name = getattr(record, record._model._rec_name)
         name = slugify(raw_name)
         parts = [record._model._name.replace(".", "-"), name]
+        # TODO for bulk export we won't want to search for each record.
+        # Better to have a stored field for uniq name
         search = record._model.search(self.session.cr, self.session.uid, [[record._model._rec_name, '=', raw_name]])
         if search and search[0] != record.id:
             parts += [str(record.id)]
         return parts
 
-    def _slug(self, record): #NOTE in an SEO/web prospective, mais SolR id is a name instead of of the OpenERP id
+    def _slug(self, record): # NOTE in an SEO/web prospective, Solr id is a name instead of the OpenERP id
         return "/".join(self._slug_parts(record))
 
     def finalize(self, map_record, values):
