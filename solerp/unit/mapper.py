@@ -60,7 +60,7 @@ class SolrExportMapper(ExportMapper):
 
     @classmethod
     def match(cls, session, model):
-        if cls.model_name is None:
+        if cls._model_name is None:
             return True # we are a generic mapper; how cool is that?
         else: # custom backend
             return super(SolrExportMapper, cls).match(session, model)
@@ -176,7 +176,7 @@ class SolrExportMapper(ExportMapper):
         elif type(item) in (list, tuple):
             return self.norm(item[0])
 
-    @tools.ormcache() #TODO invalid that cache when changing a model def? (for now just restart)
+#    @tools.ormcache() #TODO invalid that cache when changing a model def? (for now just restart)
     def _get_fields(self, model, layout):
         if layout is None:
             layout = []
