@@ -87,7 +87,7 @@ supported objects
 
 Any OpenERP object can be synch'ed.
 But this module comes with a demo for product.product.
-To test it, just uncomment "import product" in __init__.py
+To test it, just uncomment "import product" in \_\_init\_\_.py
 
 In a production system, you will instead probably implement your own
 export logic or overrides object by objects in some custom modules.
