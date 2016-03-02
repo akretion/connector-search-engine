@@ -15,6 +15,7 @@
  ],
  'data': [
      'views/product_view.xml',
+     'datas/cron_data.xml',
  ],
  'installable': True,
  'application': True,
