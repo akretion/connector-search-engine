@@ -19,69 +19,39 @@
 #
 ##############################################################################
 
-import time
 import logging
 from datetime import datetime
-from openerp.osv import fields, orm
-from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
-from openerp.addons.connector.queue.job import job
-import openerp.addons.connector as connector
-from openerp.addons.connector.session import ConnectorSession
-from openerp.addons.connector.connector import ConnectorUnit
-from openerp.addons.connector.unit.mapper import (mapping,
-                                                  only_create,
-                                                  ImportMapper
-                                                  )
-from .backend import solr
+from openerp import fields, models
 
 _logger = logging.getLogger(__name__)
 
 
-class solr_backend(orm.Model):
+class SolrBackend(models.Model):
     _name = 'solr.backend'
     _description = 'Apache SolR Backend'
     _inherit = 'connector.backend'
     _backend_type = 'solr'
 
-    def _select_versions(self, cr, uid, context=None):
+    def _select_versions(self):
         """ Available versions
 
         Can be inherited to add custom versions.
         """
         return [('3-4', '3-4')]
 
-    _columns = {
-        'version': fields.selection(
-            _select_versions,
-            string='Version',
-            required=True),
-        'location': fields.char('Location', required=True),
-        'username': fields.char('Username'),
-        'password': fields.char('Password'),
-        'default_lang_id': fields.many2one(
-            'res.lang',
-            'Default Language',
-            help="If a default language is selected, the records "
-                 "will be imported in the translation of this language."),
-        'export_ids': fields.many2many('ir.exports', 'solr_backend_ir_exports_rel', 'backend_id', 'export_id', 'Exports', help="Associate here the exports to this Solr backend"),
-    }
+    version = fields.Selection(
+        '_select_versions',
+        required=True)
+    location = fields.Char(required=True)
+    username = fields.Char()
+    password = fields.Char()
+    default_lang_id = fields.Many2one(
+        'res.lang',
+        'Default Language',
+        help="If a default language is selected, the records "
+             "will be imported in the translation of this language.")
 
-    def index_all(self, cr, uid, ids, context=None):
-        import product #TODO don't import example
-        session = ConnectorSession(cr,uid,context)
-        product_obj = self.pool.get('product.product')
-        p_ids = product_obj.search(cr, uid, [], context=context)
-#        p_ids = product_obj.search(cr, uid, [['id', '<', 34962], ['id', '>', '14000']], context=context)
-        c = 0
-        for i in p_ids:
-            _logger.info(i)
-            product.export_record.delay(session, 'product.product', i, commit=False) #TODO loop over objects listed in backend (or having new mixin TODO)
-            c += 1
-            if c > 500:
-                cr.commit()
-                c = 0
-
-    def output_recorder(self, cr, uid, ids, context=None):
+    def output_recorder(self):
         """ Utility method to output a file containing all the recorded
         requests / responses with Solr.  Used to generate test data.
         Should be called with ``erppeek`` for instance.
@@ -91,7 +61,14 @@ class solr_backend(orm.Model):
         import tempfile
         fmt = '%Y-%m-%d-%H-%M-%S'
         timestamp = datetime.now().strftime(fmt)
-        filename = 'output_%s_%s' % (cr.dbname, timestamp)
+        filename = 'output_%s_%s' % (self._cr.dbname, timestamp)
         path = os.path.join(tempfile.gettempdir(), filename)
         output_recorder(path)
         return path
+
+
+class SolrBinding(models.AbstractModel):
+    _inherit = 'batch.binding'
+    _name = 'solr.binding'
+
+    backend_id = fields.Many2one('solr.backend')

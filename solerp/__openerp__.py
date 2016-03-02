@@ -105,7 +105,7 @@ export logic or overrides object by objects in some custom modules.
     'author': 'Akretion',
     'website': 'http://www.akretion.com',
     'images': [],
-    'depends': ['connector'],
+    'depends': ['connector_batch_export'],
     'data': ['solr_model_view.xml', 'solr_menu.xml', 'security/ir.model.access.csv'],
     'test': [
     ],

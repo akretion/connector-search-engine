@@ -27,9 +27,6 @@
                                 <field name="username" colspan="2"/>
                                 <field name="password" colspan="2"/>
                             </group>
-                            <group>
-                                <field name="export_ids" colspan="4"/>
-                            </group>
                         </group>
                     </sheet>
                 </form>

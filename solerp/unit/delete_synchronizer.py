@@ -22,14 +22,14 @@
 from sunburnt import SolrInterface
 from openerp.tools.translate import _
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import DeleteSynchronizer
+from openerp.addons.connector.unit.synchronizer import Deleter
 from ..connector import get_environment
 from ..backend import solr
 
 
 #TODO we could have a batch mode too like the exporter eventually
 @solr
-class SolRDeleteSynchronizer(DeleteSynchronizer):
+class SolrDeleter(Deleter):
     """ Base deleter for Solr """
 
     @classmethod

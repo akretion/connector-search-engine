@@ -25,7 +25,7 @@ from datetime import datetime
 from openerp.tools.translate import _
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
+from openerp.addons.connector.unit.synchronizer import Exporter
 from openerp.addons.connector.exception import IDMissingInBackend
 from ..connector import get_environment
 from ..backend import solr
@@ -42,7 +42,7 @@ NUMBER_OF_DOCS_PER_COMMIT = 1000
 
 
 @solr
-class SolRExportSynchronizer(ExportSynchronizer):
+class SolrExporter(Exporter):
     """ Base exporter for Apache Solr """
     __solr_pool = {}
 
