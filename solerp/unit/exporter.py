@@ -79,7 +79,7 @@ class SolrExporter(Exporter):
         :param environment: current environment (backend, session, ...)
         :type environment: :py:class:`connector.connector.Environment`
         """
-        super(SolRExportSynchronizer, self).__init__(environment)
+        super(SolrExporter, self).__init__(environment)
         self.binding_record = None
 
     def _has_to_skip(self):
@@ -110,16 +110,16 @@ class SolrExporter(Exporter):
         map_record = self.mapper.map_record(self.binding_record)
 #        map_record = self._map_data()
         record = self._create_data(map_record, **kwargs)
-        return SolRExportSynchronizer.add(self.backend_record.location.encode('utf-8'), record)
+        return SolrExporter.add(self.backend_record.location.encode('utf-8'), record)
 
 
 @job
-def export_record(session, model_name, record_id, commit=True, fields=None):
+def export_record(session, model_name, record_ids, commit=True, fields=None):
     res = False
     for backend_id in session.search('solr.backend', []):
         env = get_environment(session, model_name, backend_id)
-        exporter = env.get_connector_unit(SolRExportSynchronizer)
+        exporter = env.get_connector_unit(SolrExporter)
         res = exporter.run(record_id, fields=fields, model_name=model_name)
         if commit:
-            SolRExportSynchronizer.commit(exporter.backend_record.location.encode('utf-8'))
+            SolrExporter.commit(exporter.backend_record.location.encode('utf-8'))
     return res
