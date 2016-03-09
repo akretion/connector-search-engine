@@ -210,7 +210,6 @@ class SolrExportMapper(ExportMapper):
         solr_vals = {}
         if not parent_vals:
             solr_vals["id"] = "%s %s %s" % (self.backend_record.name, model._name, record.id)
-            solr_vals["slug_ss"] = self._slug(record)
             solr_vals["instance_ss"] = self.backend_record.name
             solr_vals["text"] = oe_vals.get(model._rec_name) # TODO change or remove?
             solr_vals["type"] = model._name.title().replace('.', '')

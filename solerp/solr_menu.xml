@@ -4,7 +4,7 @@
 
     <menuitem id="menu_solr_root"
         parent="connector.menu_connector_root"
-        name="solr"
+        name="Solr"
         sequence="10"
         groups="connector.group_connector_manager"/>
 

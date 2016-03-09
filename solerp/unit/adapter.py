@@ -21,19 +21,24 @@
 
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
 from sunburnt import SolrInterface
+from ..backend import solr
 
 
 @solr
 class SolrAdapter(BackendAdapter):
     _model_name = None
 
-    __solr_pool = {} # pool of connection for solr
+    __solr_pool = {}  # pool of connection for solr
 
-    def __init__(self, location):
-        self.location = location
-        if not self.__solr_pool[location]:
-            self.__solr_pool[location] = SolrInterface(url)
-        self.conn = self.__solr_pool[location]
+    @classmethod
+    def match(cls, session, model):
+        return True  # We are a generic exporter; how cool is that?
+
+    def __init__(self, connector_env):
+        self.location = connector_env.backend_record.location
+        if not self.__solr_pool.get(self.location):
+            self.__solr_pool[self.location] = SolrInterface(self.location)
+        self.conn = self.__solr_pool[self.location]
 
     def add(self, datas):
         self.conn.add(datas, len(datas))
