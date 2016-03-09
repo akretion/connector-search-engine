@@ -5,7 +5,7 @@
 
 
 from openerp import api, models
-from openerp.addons.solerp.unit.exporter import export_record
+from openerp.addons.solerp.unit import exporter
 from openerp.addons.connector.session import ConnectorSession
 
 
@@ -21,7 +21,7 @@ class SolrBackend(models.Model):
             processing = templates[0:batch_size]
             templates = templates[batch_size:]
             session = ConnectorSession(self._cr, self._uid, self._context)
-            export_record.delay(
+            exporter.export_record.delay(
                 session, 'solr.product.template', processing.ids)
             processing.with_context(connector_no_export=True).write({
                 'sync_state': 'scheduled',

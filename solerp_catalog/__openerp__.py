@@ -19,4 +19,4 @@
  ],
  'installable': True,
  'application': True,
-}
+ }

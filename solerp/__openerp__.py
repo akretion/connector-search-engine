@@ -106,7 +106,14 @@ export logic or overrides object by objects in some custom modules.
     'website': 'http://www.akretion.com',
     'images': [],
     'depends': ['connector_search_engine'],
-    'data': ['solr_model_view.xml', 'solr_menu.xml', 'security/ir.model.access.csv'],
+    'data': [
+        'solr_model_view.xml',
+        'solr_menu.xml',
+        'security/ir.model.access.csv',
+    ],
+    'demo': [
+        'demo/backend_demo.xml',
+    ],
     'test': [
     ],
     'installable': True,

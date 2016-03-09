@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+<record id="backend_1" model="solr.backend">
+    <field name="name">Demo Solr Backend</field>
+    <field name="location">http://solr:8983/solr/akreshop</field>
+    <field name="version">3-4</field>
+</record>
+
+    </data>
+</openerp>

@@ -21,7 +21,7 @@
 
 from openerp.addons.connector_search_engine.unit.adapter import\
     SearchEngineAdapter
-from sunburnt import SolrInterface
+import sunburnt
 from ..backend import solr
 
 
@@ -34,7 +34,7 @@ class SolrAdapter(SearchEngineAdapter):
     def __init__(self, connector_env):
         location = connector_env.backend_record.location
         if not self.__solr_pool.get(location):
-            self.__solr_pool[location] = SolrInterface(location)
+            self.__solr_pool[location] = sunburnt.SolrInterface(location)
         self.conn = self.__solr_pool[location]
 
     def add(self, datas):

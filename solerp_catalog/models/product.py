@@ -3,7 +3,7 @@
 # Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from openerp import api, exceptions, fields, models
+from openerp import fields, models
 
 
 class SolrProductTemplate(models.Model):
@@ -14,7 +14,7 @@ class SolrProductTemplate(models.Model):
 
 
 class ProductTemplate(models.Model):
-    _inherit='product.template'
+    _inherit = 'product.template'
 
     solr_bind_ids = fields.One2many(
         'solr.product.template',
