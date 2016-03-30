@@ -3,23 +3,28 @@
 # Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from openerp.addons.solerp.tests.common import mock_api, SetUpSolrBase
+from openerp.addons.connector_nosql_solr.tests.common import (
+    mock_api,
+    SetUpSolrBase,
+)
 from openerp.addons.connector.tests.common import mock_job_delay_to_direct
 from . import data_export
+
 
 class ExportProduct(SetUpSolrBase):
 
     def test_export_product(self):
-        path = 'openerp.addons.solerp.unit.exporter.export_record'
+        path =\
+            'openerp.addons.connector_nosql_solr.unit.exporter.export_record'
         for xml_id in (3, 4):
             tmpl = self.env.ref(
                 'product.product_product_%s_product_template' % xml_id)
-            self.env['solr.product.template'].create({
+            self.env['nosql.product.template'].create({
                 'backend_id': self.backend.id,
                 'record_id': tmpl.id,
                 })
         with mock_job_delay_to_direct(path), mock_api() as API:
-            self.env['solr.backend']._scheduler_export_product()
+            self.env['nosql.backend']._scheduler_export_product()
             for item in API._calls[0][2]:
                 for key in [
                         'write_date_dts',

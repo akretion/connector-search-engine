@@ -25,19 +25,16 @@ class SunburntMock(object):
         self._calls.append(('delete', datas))
         return True
 
+
 @contextmanager
 def mock_api():
-    """
-    :param responses: responses returned by Prestashop
-    :type responses: dict
-    """
     sunburnt_mock = SunburntMock()
 
     def get_mock_interface(location):
         sunburnt_mock.location = location
         return sunburnt_mock
 
-    with mock.patch('sunburnt.SolrInterface', get_mock_interface) as API:
+    with mock.patch('sunburnt.SolrInterface', get_mock_interface):
         yield sunburnt_mock
 
 
@@ -45,4 +42,4 @@ class SetUpSolrBase(TransactionCase):
 
     def setUp(self):
         super(SetUpSolrBase, self).setUp()
-        self.backend = self.env.ref('solerp.backend_1')
+        self.backend = self.env.ref('connector_nosql_solr.backend_1')

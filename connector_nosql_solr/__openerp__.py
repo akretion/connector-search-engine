@@ -2,7 +2,7 @@
     'name': 'SolR',
     'version': '0.1',
     'category': 'Connector',
-    'summary': 'SolR',
+    'summary': 'Connector SolR',
     'description': """
 SolR 
 
@@ -105,11 +105,10 @@ export logic or overrides object by objects in some custom modules.
     'author': 'Akretion',
     'website': 'http://www.akretion.com',
     'images': [],
-    'depends': ['connector_search_engine'],
+    'depends': [
+        'connector_nosql',
+    ],
     'data': [
-        'solr_model_view.xml',
-        'solr_menu.xml',
-        'security/ir.model.access.csv',
     ],
     'demo': [
         'demo/backend_demo.xml',

@@ -2,7 +2,7 @@
 <openerp>
     <data>
 
-<record id="backend_1" model="solr.backend">
+<record id="backend_1" model="nosql.backend">
     <field name="name">Demo Solr Backend</field>
     <field name="location">http://solr:8983/solr/akreshop</field>
     <field name="version">3-4</field>
