@@ -17,7 +17,6 @@
  ],
  'demo': [
      'demo/backend_demo.xml',
-     'demo/ir.exports.line.csv',
  ],
  'installable': True,
  'application': True,
