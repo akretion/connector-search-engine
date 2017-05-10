@@ -1,11 +1,11 @@
-[![Build Status](https://travis-ci.org/akretion/connector-nosql.svg?branch=9.0)](https://travis-ci.org/akretion/connector-nosql)
-[![Coverage Status](https://coveralls.io/repos/github/akretion/connector-nosql/badge.svg?branch=9.0)](https://coveralls.io/github/akretion/connector-nosql?branch=9.0)
-[![Code Climate](https://codeclimate.com/github/akretion/connector-nosql/badges/gpa.svg)](https://codeclimate.com/github/akretion/connector-nosql)
+[![Build Status](https://travis-ci.org/akretion/connector-search-engine.svg?branch=9.0)](https://travis-ci.org/akretion/connector-search-engine)
+[![Coverage Status](https://coveralls.io/repos/github/akretion/connector-search-engine/badge.svg?branch=9.0)](https://coveralls.io/github/akretion/connector-search-engine?branch=9.0)
+[![Code Climate](https://codeclimate.com/github/akretion/connector-search-engine/badges/gpa.svg)](https://codeclimate.com/github/akretion/connector-search-engine)
 
-Nosql Connector for Odoo
+Search Engine Connector for Odoo
 ============================
 
-This project include a generic nosql connector and also a specific connector for Algolia.
+This project include a generic search engine connector and also a specific connector for Algolia.
 
 
 Note
