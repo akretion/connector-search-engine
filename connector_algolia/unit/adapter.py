@@ -34,3 +34,7 @@ class AlgoliaAdapter(SeAdapter):
     def delete(self, binding_ids):
         index = self._get_index()
         index.delete_objects(binding_ids)
+
+    def browse_from(self, filters, cursor):
+        index = self._get_index()
+        return index.browse_from(filters, cursor)

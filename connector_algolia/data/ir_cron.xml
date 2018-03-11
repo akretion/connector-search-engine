@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+<record forcecreate="True" id="ir_cron_clear_all_index_dead_content" model="ir.cron">
+    <field name="name">Clear All index dead content</field>
+    <field eval="True" name="active"/>
+    <field name="user_id" ref="base.user_root"/>
+    <field name="interval_number">1</field>
+    <field name="interval_type">days</field>
+    <field name="numbercall">-1</field>
+    <field eval="False" name="doall"/>
+    <field eval="'se.index'" name="model"/>
+    <field eval="'clear_all_index_dead_content'" name="function"/>
+    <field eval="'()'" name="args"/>
+</record>
+
+    </data>
+</openerp>
