@@ -25,16 +25,42 @@ class SeExporter(Component):
         """ Create the SolR record """
         return self.backend_adapter.add(data)
 
+    def _update(self, data):
+        """
+        Update data given in parameter
+        :param data: list of dict
+        :return:
+        """
+        return self.backend_adapter.update(data)
+
     def _export_data(self):
         return NotImplemented
 
-    def run(self):
-        """ Run the synchronization
-        :param binding_id: identifier of the binding record to export
+    def run(self, records=None, mapper=None):
         """
+        Run the synchronization (create or update).
+        If some records are given in parameter, an update is done on them.
+        Otherwise, a create is done for every records of the current work.
+        :param records: recordset
+        :param mapper: None or str
+        :return:
+        """
+        # Load the mapper
+        if not mapper:
+            mapper = self.mapper
+        else:
+            mapper = self.component_by_name(mapper)
+        # Default action is add
+        action = self._add
+        if records:
+            action = self._update
+        records = records or self.work.records
         datas = []
         lang = self.work.index.lang_id.code
-        for record in self.work.records.with_context(lang=lang):
-            map_record = self.mapper.map_record(record)
+        # Use the with_context only if necessary
+        if records.env.context.get('lang', False) != lang:
+            records = records.with_context(lang=lang)
+        for record in records:
+            map_record = mapper.map_record(record)
             datas.append(map_record.values())
-        return self._add(datas)
+        return action(datas)
