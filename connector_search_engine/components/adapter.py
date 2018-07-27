@@ -18,5 +18,13 @@ class SeAdapter(AbstractComponent):
     def add(self, datas):
         return NotImplemented
 
+    def update(self, datas):
+        """
+        Update given datas
+        :param datas: list of dict
+        :return: bool
+        """
+        return NotImplemented
+
     def delete(self, binding_ids):
         return NotImplemented

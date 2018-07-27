@@ -33,6 +33,16 @@ class AlgoliaAdapter(Component):
         index = self._get_index()
         index.add_objects(datas)
 
+    def update(self, datas):
+        """
+        Update the Algolia records based on given datas
+        :param datas: list of dict
+        :return: bool
+        """
+        index = self._get_index()
+        index.save_objects(datas)
+        return True
+
     def delete(self, binding_ids):
         index = self._get_index()
         index.delete_objects(binding_ids)

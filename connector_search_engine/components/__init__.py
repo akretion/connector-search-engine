@@ -7,3 +7,4 @@ from . import core
 from . import exporter
 from . import adapter
 from . import mapper
+from . import shopinvader_variant_json_export_mapper
