@@ -5,5 +5,6 @@
 
 from . import core
 from . import exporter
+from . import deleter
 from . import adapter
 from . import mapper
