@@ -7,6 +7,7 @@ Search Engine Connector for Odoo
 
 This project include a generic search engine connector and also a specific connector for Algolia.
 
+Ah
 
 Note
 =====
