@@ -24,6 +24,9 @@ class SeIndex(models.Model):
         'ir.model',
         string='Model',
         required=True)
+    settings = fields.Text(
+        'Additionnal settings',
+        help="Facetting, pagination, advanced settings, etc.")
     exporter_id = fields.Many2one(
         'ir.exports',
         string='Exporter')

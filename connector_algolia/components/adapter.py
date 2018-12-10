@@ -5,6 +5,7 @@
 
 
 import logging
+import json
 
 from odoo.addons.component.core import Component
 from odoo import _
@@ -31,6 +32,12 @@ class AlgoliaAdapter(Component):
             backend.algolia_app_id, account._get_password())
         return client.initIndex(self.work.index.name)
 
+    def _set_settings(self, index):
+        """Set advanced settings like facettings attributes."""
+        data = self.work.index.settings
+        clean = json.loads(data)
+        index.setSettings(clean)
+
     def index(self, datas):
         index = self._get_index()
         # Ensure that the objectID is set because algolia will use it
@@ -39,6 +46,7 @@ class AlgoliaAdapter(Component):
             if not data.get('objectID'):
                 raise UserError(
                     _('The key objectID is missing in the data %s') % data)
+        self._set_settings(index)
         index.add_objects(datas)
 
     def delete(self, binding_ids):
@@ -48,3 +56,4 @@ class AlgoliaAdapter(Component):
     def clear(self):
         index = self._get_index()
         index.clear_index()
+        self._set_settings(index)

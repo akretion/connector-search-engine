@@ -11,7 +11,7 @@ This module is a base module to synchronize Algolia with Odoo
 Installation
 ============
 
-This module will be installed when you will need it for on of your module dependency
+This module will be installed when you will need it for one of your module dependency
 
 Configuration
 =============
@@ -33,7 +33,7 @@ Usage
 Known issues / Roadmap
 ======================
 
-* Nothing yet
+* Improve when to trigger set_settings()
 
 Bug Tracker
 ===========
@@ -56,6 +56,7 @@ Contributors
 
 * Sébastien BEAU <sebastien.beau@akretion.com>
 * Laurent Mignon <laurent.mignon@acsone.eu>
+* Raphaël Reverdy <raphael.reverdy@akretion.com>
 
 Maintainer
 ----------

@@ -5,7 +5,7 @@
 
 {
     'name': 'Connector Search Engine',
-    'version': '10.0.0.0.1',
+    'version': '10.0.0.0.3',
     'author': 'Akretion,ACSONE SA/NV',
     'website': 'http://www.akretion.com',
     'license': 'AGPL-3',
