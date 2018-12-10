@@ -35,8 +35,9 @@ class AlgoliaAdapter(Component):
     def _set_settings(self, index):
         """Set advanced settings like facettings attributes."""
         data = self.work.index.settings
-        clean = json.loads(data)
-        index.setSettings(clean)
+        if data:
+            clean = json.loads(data)
+            index.setSettings(clean)
 
     def index(self, datas):
         index = self._get_index()
