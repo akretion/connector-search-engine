@@ -32,12 +32,17 @@ class AlgoliaAdapter(Component):
             backend.algolia_app_id, account._get_password())
         return client.initIndex(self.work.index.name)
 
-    def _set_settings(self, index):
+    def set_settings(self, force=True):
         """Set advanced settings like facettings attributes."""
-        data = self.work.index.settings
-        if data:
-            clean = json.loads(data)
-            index.setSettings(clean)
+        set_settings = force
+        index = self._get_index()
+        data = self.work.index._get_setting_values()
+        if not force:
+            # TODO check if index exist in order to know if we should export
+            # setting
+            pass
+        if data and set_settings:
+            index.setSettings(data)
 
     def index(self, datas):
         index = self._get_index()
@@ -47,7 +52,6 @@ class AlgoliaAdapter(Component):
             if not data.get('objectID'):
                 raise UserError(
                     _('The key objectID is missing in the data %s') % data)
-        self._set_settings(index)
         index.add_objects(datas)
 
     def delete(self, binding_ids):
@@ -57,4 +61,4 @@ class AlgoliaAdapter(Component):
     def clear(self):
         index = self._get_index()
         index.clear_index()
-        self._set_settings(index)
+        self.set_settings()

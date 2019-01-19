@@ -77,7 +77,7 @@ class TestConnectorAlgolia(ConnectorAlgoliaCase, JobMixin):
         partners.write({
             'sync_state': 'to_update',
             'data': {'objectID': 'foo'},
-            })
+        })
         count = len(partners)
 
         # Generate Batch export job

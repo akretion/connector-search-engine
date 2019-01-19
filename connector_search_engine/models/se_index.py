@@ -46,9 +46,6 @@ class SeIndex(models.Model):
         string='Model',
         required=True,
         domain=_get_model_domain)
-    settings = fields.Text(
-        'Additionnal settings',
-        help="Facetting, pagination, advanced settings, etc.")
     exporter_id = fields.Many2one(
         'ir.exports',
         string='Exporter')
@@ -143,3 +140,21 @@ class SeIndex(models.Model):
             adapter = work.component(usage='se.backend.adapter')
             adapter.clear()
         return True
+
+    def _get_setting_values(self):
+        """
+            Override this method is sub modules in order to pass the adequate
+            settings (like Facetting, pagination, advanced settings, etc...)
+        """
+        self.ensure_one()
+        return {}
+
+    @api.model
+    def export_all_settings(self):
+        for index in self.search([]):
+            se_specific_backend = index.backend_id.specific_backend
+            with se_specific_backend.work_on(
+                index.model_id.model, index=index
+            ) as work:
+                exporter = work.component(usage='se.record.exporter')
+                exporter.export_settings()
