@@ -22,7 +22,7 @@ class SeBinding(models.AbstractModel):
         ('to_update', 'To update'),
         ('scheduled', 'Scheduled'),
         ('done', 'Done'),
-        ],
+    ],
         default='new',
         readonly=True)
     date_modified = fields.Date(readonly=True)

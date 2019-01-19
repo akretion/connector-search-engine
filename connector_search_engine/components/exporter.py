@@ -21,3 +21,7 @@ class SeExporter(Component):
         """ Run the synchronization """
         self.work.records.write({'sync_state': 'done'})
         return self._index([record.data for record in self.work.records])
+
+    def export_settings(self, force=True):
+        """ Run the settings synchronization """
+        return self.backend_adapter.set_settings(force=force)

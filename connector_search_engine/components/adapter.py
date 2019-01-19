@@ -23,3 +23,7 @@ class SeAdapter(AbstractComponent):
 
     def clear(self):
         return NotImplemented
+
+    def set_settings(self, force=True):
+        """Set advanced settings like facettings attributes."""
+        return NotImplemented
