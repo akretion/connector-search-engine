@@ -23,3 +23,6 @@ class SeAdapter(AbstractComponent):
 
     def clear(self):
         return NotImplemented
+
+    def iter(self):
+        return NotImplemented
