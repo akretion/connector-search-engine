@@ -51,18 +51,15 @@ class TestConnectorElasticsearch(VCRMixin, TestBindingIndexBase):
         return values
 
     def test_index_adapter_no_objectID(self):
-        self.partner_binding.sync_state = "to_update"
         with self.assertRaises(exceptions.UserError) as err:
-            self.se_index.batch_export()
+            self.adapter.index([{"foo": "bar"}])
             self.assertIn("The key objectID is missing in", err.exception.name)
 
     def test_index_adapter(self):
-        # Set partner to be updated with fake vals in data
-        self.partner_binding.write(
-            {"sync_state": "to_update", "data": {"objectID": "foo"}}
-        )
         # Export index to elasticsearch should be called
-        self.se_index.batch_export()
+        data = {"objectID": "foo"}
+        self.adapter.index([data])
+
         # We should have 3 or 4 request...
         # ping
         # index exists?
